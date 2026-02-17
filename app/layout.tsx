@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import { RecentlyViewedProvider } from '@/components/providers/RecentlyViewedProvider';
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +32,9 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased">
-        {children}
+        <RecentlyViewedProvider>
+          {children}
+        </RecentlyViewedProvider>
       </body>
     </html>
   );

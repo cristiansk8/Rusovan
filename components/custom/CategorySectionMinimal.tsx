@@ -39,7 +39,9 @@ export default function CategorySectionMinimal({ collections }: CategorySectionM
   const validCollections = collections
     .filter(c =>
       c.handle !== '' &&
+      c.handle !== 'undefined' &&
       !c.handle.toLowerCase().includes('hidden') &&
+      c.handle.toLowerCase() !== 'undefined' &&
       c.title.toLowerCase() !== 'all'
     )
     .map(c => ({

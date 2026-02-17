@@ -1,0 +1,322 @@
+'use client';
+
+import { useState } from 'react';
+import { ProductVariations } from './ProductVariations';
+import { Minus, Plus, Truck, RefreshCcw, Shield, Package } from 'lucide-react';
+
+interface ProductAttribute {
+  name: string;
+  value: string;
+}
+
+interface ProductVariation {
+  id: string;
+  name: string;
+  price?: string;
+  regularPrice?: string;
+  salePrice?: string;
+  stockStatus: string;
+  stockQuantity?: number;
+  attributes: {
+    nodes: ProductAttribute[];
+  };
+}
+
+interface WooProduct {
+  id: string;
+  name: string;
+  slug: string;
+  __typename?: string;
+  price?: string;
+  regularPrice?: string;
+  salePrice?: string;
+  stockStatus?: string;
+  shortDescription?: string;
+  description?: string;
+  image?: {
+    sourceUrl?: string;
+    url?: string;
+  };
+  variations?: {
+    nodes: ProductVariation[];
+  };
+}
+
+interface ProductDescriptionWooProps {
+  product: WooProduct;
+}
+
+interface AccordionItemProps {
+  title: string;
+  icon: React.ReactNode;
+  content: string | React.ReactNode;
+  isOpen: boolean;
+  onClick: () => void;
+}
+
+function AccordionItem({ title, icon, content, isOpen, onClick }: AccordionItemProps) {
+  return (
+    <div className="border-b border-gray-200">
+      <button
+        onClick={onClick}
+        className="w-full flex items-center justify-between py-4 text-left transition-colors hover:text-green-700 group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="text-gray-500 group-hover:text-green-700 transition-colors">
+            {icon}
+          </div>
+          <span className="font-moderat text-sm uppercase tracking-wider font-medium text-gray-900 group-hover:text-green-700 transition-colors">
+            {title}
+          </span>
+        </div>
+        <span className={`text-gray-400 text-2xl font-light transition-all duration-300 ${isOpen ? 'rotate-45' : 'rotate-0'}`}>
+          +
+        </span>
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-500 ease-in-out ${
+          isOpen ? 'max-h-96 opacity-100 pb-4' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="text-gray-600 leading-relaxed text-sm animate-fadeIn">
+          {typeof content === 'string' ? (
+            <div dangerouslySetInnerHTML={{ __html: content }} />
+          ) : (
+            content
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function ProductDescriptionWoo({ product }: ProductDescriptionWooProps) {
+  const [quantity, setQuantity] = useState(1);
+  const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
+  const [openAccordion, setOpenAccordion] = useState<number | null>(null);
+
+  // Determinar si es un producto variable
+  const isVariable = product.__typename === 'VariableProduct';
+  const variations = isVariable ? product.variations?.nodes || [] : [];
+
+  // Obtener precio y stock actual
+  const currentPrice = selectedVariation?.price || product.price || 'Precio no disponible';
+  const currentStockStatus = selectedVariation?.stockStatus || product.stockStatus;
+  const stockQuantity = selectedVariation?.stockQuantity;
+
+  // Calcular cantidad máxima disponible
+  const MAX_QUANTITY = stockQuantity && stockQuantity > 0 ? stockQuantity : 99;
+
+  const handleAccordionClick = (index: number) => {
+    setOpenAccordion(openAccordion === index ? null : index);
+  };
+
+  const handleVariationChange = (variation: ProductVariation | null) => {
+    setSelectedVariation(variation);
+    setQuantity(1); // Reset quantity when variation changes
+  };
+
+  const handleQuantityChange = (change: number) => {
+    const newQuantity = quantity + change;
+    if (newQuantity >= 1 && newQuantity <= MAX_QUANTITY) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (isVariable && !selectedVariation) {
+      alert('Por favor selecciona una variación');
+      return;
+    }
+
+    const productId = selectedVariation?.id || product.id;
+    alert(`Producto agregado: ${productId}\nCantidad: ${quantity}\n\nEsta función se conectará con el carrito de WooCommerce.`);
+  };
+
+  // Envío gratis - leer desde el AnnouncementBar
+  const freeShippingThreshold = 150000; // $150.000 COP
+
+  return (
+    <div className="space-y-6">
+      {/* Título y Precio */}
+      <div>
+        <h1 className="font-belleza text-2xl lg:text-3xl font-light tracking-wide text-gray-900 mb-4">
+          {product.name}
+        </h1>
+
+        <div className="flex items-baseline gap-3 mb-4">
+          <p className="font-moderat text-2xl lg:text-3xl font-semibold text-gray-900">
+            {currentPrice}
+          </p>
+          {product.salePrice && product.regularPrice && product.regularPrice !== product.salePrice && (
+            <p className="text-sm text-gray-500 line-through">
+              {product.regularPrice}
+            </p>
+          )}
+        </div>
+
+        {/* Descripción corta */}
+        {product.shortDescription && (
+          <div
+            className="text-gray-600 text-sm leading-relaxed mb-4"
+            dangerouslySetInnerHTML={{ __html: product.shortDescription }}
+          />
+        )}
+
+        {/* Stock Status */}
+        <div className="flex items-center gap-2">
+          {currentStockStatus === 'IN_STOCK' ? (
+            <span className="inline-flex items-center gap-1 text-sm text-green-700">
+              <span className="w-2 h-2 rounded-full bg-green-700"></span>
+              En stock
+              {stockQuantity && stockQuantity > 0 && stockQuantity <= 10 && (
+                <span className="text-xs text-gray-500">
+                  (¡Solo {stockQuantity} disponibles!)
+                </span>
+              )}
+            </span>
+          ) : currentStockStatus === 'OUT_OF_STOCK' ? (
+            <span className="inline-flex items-center gap-1 text-sm text-red-600">
+              <span className="w-2 h-2 rounded-full bg-red-600"></span>
+              Agotado
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-sm text-yellow-600">
+              <span className="w-2 h-2 rounded-full bg-yellow-600"></span>
+              Bajo pedido
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Variaciones para productos variables */}
+      {isVariable && variations.length > 0 && (
+        <div className="py-4">
+          <ProductVariations
+            variations={variations}
+            defaultPrice={product.price}
+            onVariationChange={handleVariationChange}
+          />
+        </div>
+      )}
+
+      {/* Selector de cantidad */}
+      <div className="flex items-center gap-4 py-2">
+        <span className="text-sm font-medium text-gray-700">Cantidad:</span>
+        <div className="flex items-center border border-gray-300 rounded-md">
+          <button
+            onClick={() => handleQuantityChange(-1)}
+            disabled={quantity <= 1}
+            className="p-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Minus className="h-4 w-4" />
+          </button>
+          <input
+            type="number"
+            min="1"
+            max={MAX_QUANTITY}
+            value={quantity}
+            onChange={(e) => {
+              const val = parseInt(e.target.value);
+              if (val >= 1 && val <= MAX_QUANTITY) {
+                setQuantity(val);
+              }
+            }}
+            className="w-16 text-center border-0 focus:ring-0 text-sm"
+          />
+          <button
+            onClick={() => handleQuantityChange(1)}
+            disabled={quantity >= MAX_QUANTITY}
+            className="p-2 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Acordeón de información */}
+      <div className="space-y-1">
+        {/* Descripción */}
+        <AccordionItem
+          title="Descripción"
+          icon={<Shield className="h-5 w-5" />}
+          isOpen={openAccordion === 0}
+          onClick={() => handleAccordionClick(0)}
+          content={
+            product.description ? (
+              <div dangerouslySetInnerHTML={{ __html: product.description }} />
+            ) : (
+              <p className="text-gray-500">Descripción no disponible</p>
+            )
+          }
+        />
+
+        {/* Envío y Entrega */}
+        <AccordionItem
+          title="Envío y Entrega"
+          icon={<Truck className="h-5 w-5" />}
+          isOpen={openAccordion === 1}
+          onClick={() => handleAccordionClick(1)}
+          content={
+            <ul className="space-y-2">
+              <li>• Envío gratis en compras superiores a ${freeShippingThreshold.toLocaleString('es-CO')} COP</li>
+              <li>• Entrega en 3-5 días hábiles en ciudades principales</li>
+              <li>• Entrega en 5-7 días hábiles en el resto del país</li>
+              <li>• Seguimiento en tiempo real de tu pedido</li>
+              <li>• Recibe directamente en tu domicilio</li>
+            </ul>
+          }
+        />
+
+        {/* Devoluciones */}
+        <AccordionItem
+          title="Devoluciones y Cambios"
+          icon={<RefreshCcw className="h-5 w-5" />}
+          isOpen={openAccordion === 2}
+          onClick={() => handleAccordionClick(2)}
+          content={
+            <ul className="space-y-2">
+              <li>• 30 días para devoluciones y cambios</li>
+              <li>• Producto debe estar sin usar con etiquetas originales</li>
+              <li>• Proceso de devolución gratuito</li>
+              <li>• Reembolso en 5-10 días hábiles</li>
+              <li>• Contáctanos para iniciar una devolución</li>
+            </ul>
+          }
+        />
+
+        {/* Información adicional (si hay variación seleccionada) */}
+        {selectedVariation && (
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+            <p className="text-xs text-gray-600 mb-1">Variación seleccionada:</p>
+            <p className="text-sm font-medium text-gray-900">{selectedVariation.name}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Botón de compra */}
+      <div className="sticky bottom-0 bg-white py-4 border-t border-gray-200">
+        <button
+          onClick={handleAddToCart}
+          disabled={currentStockStatus === 'OUT_OF_STOCK'}
+          className={`w-full py-4 px-8 rounded-lg font-moderat text-lg tracking-wide uppercase transition-all duration-300 ${
+            currentStockStatus === 'OUT_OF_STOCK'
+              ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+              : 'bg-green-700 text-white hover:bg-green-800 shadow-md hover:shadow-lg'
+          }`}
+        >
+          {currentStockStatus === 'OUT_OF_STOCK' ? 'Agotado' : 'Agregar al Carrito'}
+        </button>
+
+        <div className="mt-4 text-center">
+          <a
+            href="/search"
+            className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            ← Continuar comprando
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

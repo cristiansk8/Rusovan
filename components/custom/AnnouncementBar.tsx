@@ -7,7 +7,7 @@ type AnnouncementBarProps = {
 };
 
 const AnnouncementBar = ({
-  text = 'ENVÍO GRATIS en pedidos superiores a $120 USD',
+  text = 'ENVÍO GRATIS en pedidos superiores a $150.000 COP',
   enabled = true
 }: AnnouncementBarProps) => {
   if (!enabled) {

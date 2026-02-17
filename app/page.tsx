@@ -89,13 +89,22 @@ async function getCategories() {
     }
 
     // Adaptar a formato simple - WooCommerce usa campos diferentes
-    return collections.map((collection: any) => ({
-      id: collection.id,
-      name: collection.name,
-      slug: collection.slug,
-      image: collection.image?.sourceUrl || collection.image?.url || '/placeholder-category.jpg',
-      path: `/search/${collection.slug}`
-    }));
+    // Filtrar categorías inválidas (undefined, vacías, uncategorized, 'All')
+    return collections
+      .filter((collection: any) =>
+        collection.handle &&
+        collection.handle !== 'undefined' &&
+        collection.handle !== '' &&
+        collection.handle !== 'all' &&
+        !collection.handle.toLowerCase().includes('uncategorized')
+      )
+      .map((collection: any) => ({
+        id: collection.id,
+        name: collection.title || collection.name,
+        slug: collection.handle,
+        image: collection.image?.url || collection.image?.sourceUrl || '/placeholder-category.jpg',
+        path: collection.path || `/search/${collection.handle}`
+      }));
   } catch (error) {
     console.error('Error fetching categories:', error);
     return [];

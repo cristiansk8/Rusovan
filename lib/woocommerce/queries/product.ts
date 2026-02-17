@@ -6,6 +6,7 @@ export const getProductQuery = `
 # Obtener producto por slug
 query getProduct($slug: ID!) {
   product(id: $slug, idType: SLUG) {
+    __typename
     id
     slug
     name

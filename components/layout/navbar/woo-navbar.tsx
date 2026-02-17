@@ -15,10 +15,17 @@ async function getCategories() {
     const { getCollections } = await import('@/lib/woocommerce');
     const collections = await getCollections();
 
-    return (collections || []).map((collection: any) => ({
-      title: collection.name || collection.title,
-      path: `/search/${collection.slug || collection.handle}`
-    }));
+    return (collections || [])
+      .filter((collection: any) =>
+        collection.handle &&
+        collection.handle !== 'undefined' &&
+        collection.handle !== '' &&
+        collection.slug !== 'undefined'
+      )
+      .map((collection: any) => ({
+        title: collection.name || collection.title,
+        path: `/search/${collection.slug || collection.handle}`
+      }));
   } catch (error) {
     return [];
   }

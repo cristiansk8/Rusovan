@@ -360,6 +360,14 @@ export async function getCollections(): Promise<Collection[]> {
 
   const wooCollections = res.body.data.productCategories?.nodes || [];
 
+  // Filtrar categorías sin slug válido o con slug 'undefined'
+  const validCollections = wooCollections.filter((collection: WooCollection) =>
+    collection.slug &&
+    collection.slug !== 'undefined' &&
+    collection.slug !== '' &&
+    !collection.slug.toLowerCase().includes('uncategorized')
+  );
+
   return [
     {
       handle: '',
@@ -372,7 +380,7 @@ export async function getCollections(): Promise<Collection[]> {
       path: '/search',
       updatedAt: new Date(0).toISOString()
     },
-    ...reshapeCollections(wooCollections)
+    ...reshapeCollections(validCollections)
   ];
 }
 

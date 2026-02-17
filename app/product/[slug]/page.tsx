@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { WooNavbar } from '@/components/layout/navbar/woo-navbar';
 import FooterCustom from '@/components/custom/FooterCustom';
+import { ProductDescriptionWoo } from '@/components/product/ProductDescriptionWoo';
+import { ProductViewTracker } from '@/components/product/ProductViewTracker';
 
 /**
  * PÁGINA INDIVIDUAL DE PRODUCTO - WooCommerce
@@ -75,6 +77,15 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
   const image = product.image?.sourceUrl || product.image?.url || '/placeholder.jpg';
   const galleryImages = product.galleryImages?.nodes || [];
 
+  // Preparar datos para el tracker de productos vistos
+  const productForTracker = {
+    id: product.id,
+    slug: product.slug,
+    name: product.name,
+    price: product.price,
+    image: product.image?.sourceUrl || product.image?.url
+  };
+
   // Función simple para limpiar HTML - solo extraer texto
   const stripHtml = (html: string) => {
     if (!html) return '';
@@ -102,93 +113,46 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
           </ol>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Galería de imágenes */}
-          <div className="space-y-4">
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
-              <img
-                src={image}
-                alt={product.name || 'Producto'}
-                className="w-full h-full object-cover object-center"
-              />
-            </div>
-
-            {galleryImages.length > 0 && (
-              <div className="grid grid-cols-4 gap-4">
-                {galleryImages.map((img: any, index: number) => (
-                  <div
-                    key={img.sourceUrl || index}
-                    className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer hover:opacity-75"
-                  >
-                    <img
-                      src={img.sourceUrl}
-                      alt={`${product.name || 'Producto'} - ${index + 1}`}
-                      className="w-full h-full object-cover object-center"
-                    />
-                  </div>
-                ))}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-16">
+          {/* Galería de imágenes - 60% (3 columnas) */}
+          <div className="lg:col-span-3">
+            <div className="space-y-4">
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
+                <img
+                  src={image}
+                  alt={product.name || 'Producto'}
+                  className="w-full h-full object-cover object-center"
+                />
               </div>
-            )}
+
+              {galleryImages.length > 0 && (
+                <div className="grid grid-cols-4 gap-4">
+                  {galleryImages.map((img: any, index: number) => (
+                    <div
+                      key={img.sourceUrl || index}
+                      className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer hover:opacity-75"
+                    >
+                      <img
+                        src={img.sourceUrl}
+                        alt={`${product.name || 'Producto'} - ${index + 1}`}
+                        className="w-full h-full object-cover object-center"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Info del producto */}
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-4">
-                {product.name}
-              </h1>
-
-              <p className="text-3xl text-gray-900 font-semibold mb-4">
-                {price}
-              </p>
-
-              {shortDescription && (
-                <div className="text-gray-700 leading-relaxed mb-6">
-                  {shortDescription}
-                </div>
-              )}
-
-              {description && (
-                <div className="text-gray-600 leading-relaxed">
-                  {description}
-                </div>
-              )}
-            </div>
-
-            {/* Stock status */}
-            {product.stockStatus && (
-              <div className="flex items-center space-x-2">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                  product.stockStatus === 'IN_STOCK'
-                    ? 'bg-green-100 text-green-800'
-                    : product.stockStatus === 'OUT_OF_STOCK'
-                    ? 'bg-red-100 text-red-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  {product.stockStatus === 'IN_STOCK' && '✓ En stock'}
-                  {product.stockStatus === 'OUT_OF_STOCK' && '✗ Agotado'}
-                  {product.stockStatus === 'ON_BACKORDER' && '⏳ Bajo pedido'}
-                </span>
-              </div>
-            )}
-
-            {/* Botón de compra - temporal */}
-            <div className="space-y-4">
-              <button className="w-full bg-green-700 text-white py-4 px-8 rounded-lg font-semibold text-lg hover:bg-green-800 transition-colors">
-                Agregar al carrito
-              </button>
-
-              <Link
-                href="/"
-                className="block text-center text-gray-600 hover:text-gray-900"
-              >
-                ← Volver a productos
-              </Link>
-            </div>
+          {/* Info del producto - 40% (2 columnas) - Sticky */}
+          <div className="lg:col-span-2 lg:sticky lg:top-32 lg:self-start">
+            <ProductDescriptionWoo product={product} />
           </div>
         </div>
       </div>
     </main>
+
+    <ProductViewTracker product={productForTracker} />
 
     <FooterCustom />
     </>
