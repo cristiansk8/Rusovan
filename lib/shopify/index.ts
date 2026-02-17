@@ -75,13 +75,16 @@ const domain = process.env.SHOPIFY_STORE_DOMAIN
   : '';
 const endpoint = `${domain}${SHOPIFY_GRAPHQL_API_ENDPOINT}`;
 
-// Validar que el token de acceso exista
-if (!process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
-  throw new Error(
-    'SHOPIFY_STOREFRONT_ACCESS_TOKEN is required. Please check your .env file.'
-  );
+// NOTA: Shopify es legado. Migrando a WooCommerce.
+// Las variables de Shopify ahora son opcionales para no romper el build.
+const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN || '';
+
+// Solo validar si estamos usando Shopify (no WooCommerce)
+if (key && !process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN) {
+  if (process.env.NODE_ENV === 'development') {
+    console.warn('SHOPIFY_STOREFRONT_ACCESS_TOKEN is not set. Shopify features will be disabled.');
+  }
 }
-const key = process.env.SHOPIFY_STOREFRONT_ACCESS_TOKEN;
 
 type ExtractVariables<T> = T extends { variables: object }
   ? T['variables']
