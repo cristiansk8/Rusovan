@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ProductVariations } from './ProductVariations';
 import { Minus, Plus, Truck, RefreshCcw, Shield, Package } from 'lucide-react';
+import { useCart } from '@/components/providers/CartProvider';
 
 interface ProductAttribute {
   name: string;
@@ -11,6 +12,7 @@ interface ProductAttribute {
 
 interface ProductVariation {
   id: string;
+  databaseId: number;
   name: string;
   price?: string;
   regularPrice?: string;
@@ -24,6 +26,7 @@ interface ProductVariation {
 
 interface WooProduct {
   id: string;
+  databaseId: number;
   name: string;
   slug: string;
   __typename?: string;
@@ -94,6 +97,8 @@ export function ProductDescriptionWoo({ product }: ProductDescriptionWooProps) {
   const [quantity, setQuantity] = useState(1);
   const [selectedVariation, setSelectedVariation] = useState<ProductVariation | null>(null);
   const [openAccordion, setOpenAccordion] = useState<number | null>(null);
+  const { addToCart } = useCart();
+  const [isAdding, setIsAdding] = useState(false);
 
   // Determinar si es un producto variable
   const isVariable = product.__typename === 'VariableProduct';
@@ -123,14 +128,28 @@ export function ProductDescriptionWoo({ product }: ProductDescriptionWooProps) {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (isVariable && !selectedVariation) {
       alert('Por favor selecciona una variación');
       return;
     }
 
-    const productId = selectedVariation?.id || product.id;
-    alert(`Producto agregado: ${productId}\nCantidad: ${quantity}\n\nEsta función se conectará con el carrito de WooCommerce.`);
+    const productId = selectedVariation?.databaseId || product.databaseId;
+
+    try {
+      setIsAdding(true);
+      const success = await addToCart(productId, quantity);
+
+      if (success) {
+        // El carrito se abrirá automáticamente
+        console.log('Producto agregado al carrito');
+      }
+    } catch (error) {
+      console.error('Error al agregar al carrito:', error);
+      alert('Error al agregar al carrito. Por favor intenta de nuevo.');
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   // Envío gratis - leer desde el AnnouncementBar
@@ -298,14 +317,14 @@ export function ProductDescriptionWoo({ product }: ProductDescriptionWooProps) {
       <div className="sticky bottom-0 bg-white py-4 border-t border-gray-200">
         <button
           onClick={handleAddToCart}
-          disabled={currentStockStatus === 'OUT_OF_STOCK'}
+          disabled={currentStockStatus === 'OUT_OF_STOCK' || isAdding}
           className={`w-full py-4 px-8 rounded-lg font-moderat text-lg tracking-wide uppercase transition-all duration-300 ${
-            currentStockStatus === 'OUT_OF_STOCK'
+            currentStockStatus === 'OUT_OF_STOCK' || isAdding
               ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
               : 'bg-green-700 text-white hover:bg-green-800 shadow-md hover:shadow-lg'
           }`}
         >
-          {currentStockStatus === 'OUT_OF_STOCK' ? 'Agotado' : 'Agregar al Carrito'}
+          {isAdding ? 'Agregando...' : currentStockStatus === 'OUT_OF_STOCK' ? 'Agotado' : 'Agregar al Carrito'}
         </button>
 
         <div className="mt-4 text-center">

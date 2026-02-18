@@ -33,14 +33,15 @@ import {
   Collection
 } from './types';
 
-// URL del endpoint GraphQL de WordPress/WooCommerce
-const WOOCOMMERCE_GRAPHQL_ENDPOINT = '/graphql';
+// URL del endpoint GraphQL - Usar proxy local para evitar CORS
+const GRAPHQL_ENDPOINT = '/api/graphql';
 
 const domain = process.env.NEXT_PUBLIC_WOOCOMMERCE_URL
   ? process.env.NEXT_PUBLIC_WOOCOMMERCE_URL.replace(/\/$/, '') // Remover trailing slash
   : '';
 
-const endpoint = `${domain}${WOOCOMMERCE_GRAPHQL_ENDPOINT}`;
+// Endpoint directo (para referencia)
+const directEndpoint = `${domain}/graphql`;
 
 /**
  * Cliente fetch para WooCommerce GraphQL
@@ -56,6 +57,13 @@ export async function woocommerceFetch<T>({
   variables?: object;
 }): Promise<{ status: number; body: T } | never> {
   try {
+    // Usar endpoint directo en servidor, proxy en cliente
+    const isServer = typeof window === 'undefined';
+    const endpoint = isServer ? directEndpoint : GRAPHQL_ENDPOINT;
+
+    console.log(`🔵 Fetching WooCommerce (${isServer ? 'Server' : 'Client'}): ${endpoint}`);
+    console.log('🔵 Variables:', variables);
+
     const result = await fetch(endpoint, {
       method: 'POST',
       headers: {
@@ -70,15 +78,34 @@ export async function woocommerceFetch<T>({
 
     const body = await result.json();
 
-    if (body.errors) {
-      throw body.errors[0];
+    if (!result.ok) {
+      console.error('❌ WooCommerce fetch error:', {
+        status: result.status,
+        statusText: result.statusText,
+        body
+      });
+      throw new Error(`HTTP ${result.status}: ${result.statusText}`);
     }
+
+    if (body.errors) {
+      console.error('❌ GraphQL errors:', body.errors);
+      const errorMessage = body.errors[0]?.message || 'Error desconocido en GraphQL';
+      throw new Error(errorMessage);
+    }
+
+    console.log('✅ WooCommerce fetch successful');
 
     return {
       status: result.status,
       body
     };
   } catch (e: any) {
+    console.error('❌ WooCommerce fetch exception:', {
+      message: e.message,
+      cause: e.cause,
+      status: e.status,
+      query: query?.substring(0, 100)
+    });
     throw {
       cause: e.cause?.toString() || 'unknown',
       status: e.status || 500,

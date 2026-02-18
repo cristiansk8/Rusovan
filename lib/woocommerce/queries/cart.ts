@@ -21,6 +21,13 @@ query getCart {
                 altText
               }
             }
+            ... on VariableProduct {
+              price
+              image {
+                sourceUrl
+                altText
+              }
+            }
           }
         }
         variation {
@@ -28,6 +35,10 @@ query getCart {
             id
             name
             price
+            image {
+              sourceUrl
+              altText
+            }
           }
         }
         quantity

@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { Bars3Icon, MagnifyingGlassIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { usePathname } from 'next/navigation';
 import { CategoryDropdown } from './category-dropdown';
+import { CartIcon } from '@/components/cart/CartIcon';
 
 /**
  * NAVBAR CLIENT COMPONENT - WooCommerce
@@ -197,13 +198,7 @@ export function WooNavbarClient({ categories, SITE_NAME }: WooNavbarClientProps)
 
           {/* Cart */}
           <div className="flex justify-end md:w-1/3">
-            <Link
-              href="/search"
-              className="relative flex items-center justify-center rounded-md border border-gray-200 p-2 text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-              aria-label="Ver productos"
-            >
-              <ShoppingBagIcon className="h-5 w-5" />
-            </Link>
+            <CartIcon />
           </div>
         </div>
       </nav>

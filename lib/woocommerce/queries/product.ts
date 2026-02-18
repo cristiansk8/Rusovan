@@ -8,6 +8,7 @@ query getProduct($slug: ID!) {
   product(id: $slug, idType: SLUG) {
     __typename
     id
+    databaseId
     slug
     name
     shortDescription
@@ -47,6 +48,7 @@ query getProduct($slug: ID!) {
       variations {
         nodes {
           id
+          databaseId
           name
           price
           regularPrice

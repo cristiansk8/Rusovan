@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { RecentlyViewedProvider } from '@/components/providers/RecentlyViewedProvider';
+import { CartProvider } from '@/components/providers/CartProvider';
+import { CartDrawer } from '@/components/cart/CartDrawer';
 
 export const metadata: Metadata = {
   title: {
@@ -32,9 +34,12 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className="antialiased">
-        <RecentlyViewedProvider>
-          {children}
-        </RecentlyViewedProvider>
+        <CartProvider>
+          <RecentlyViewedProvider>
+            {children}
+          </RecentlyViewedProvider>
+          <CartDrawer />
+        </CartProvider>
       </body>
     </html>
   );

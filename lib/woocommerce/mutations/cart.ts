@@ -1,5 +1,6 @@
 /**
  * WOOCOMMERCE CART MUTATIONS
+ * Mutations actualizadas para WPGraphQL + WooCommerce
  */
 
 export const addToCartMutation = `
@@ -10,11 +11,53 @@ mutation addToCart($productId: Int!, $quantity: Int) {
     quantity: $quantity
   }) {
     cart {
+      contents {
+        nodes {
+          key
+          quantity
+          product {
+            node {
+              id
+              name
+              slug
+              ... on SimpleProduct {
+                price
+                image {
+                  sourceUrl
+                  altText
+                }
+              }
+              ... on VariableProduct {
+                price
+                image {
+                  sourceUrl
+                  altText
+                }
+              }
+            }
+          }
+          variation {
+            node {
+              id
+              name
+              price
+              image {
+                sourceUrl
+                altText
+              }
+            }
+          }
+          subtotal
+          total
+        }
+      }
       subtotal
       total
+      shippingTotal
+      discountTotal
+      feeTotal
     }
-    success
-    error
+    clientMutationId
   }
 }
 `;
@@ -41,8 +84,8 @@ mutation updateCartItems($items: [CartItemInput!]!) {
       subtotal
       total
     }
-    success
-    error
+    clientMutationId
   }
 }
 `;
+
