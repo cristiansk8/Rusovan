@@ -2,8 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { WooNavbar } from '@/components/layout/navbar/woo-navbar';
-import FooterCustom from '@/components/custom/FooterCustom';
 import { ArrowLeft, Minus, Plus, Trash2 } from 'lucide-react';
 import { useCart } from '@/components/providers/CartProvider';
 import { CartItem } from '@/lib/woocommerce/cart';
@@ -134,38 +132,29 @@ export default function CartPage() {
 
   if (isLoading) {
     return (
-      <>
-        <WooNavbar />
-        <main className="min-h-screen bg-white pt-36">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex items-center justify-center h-96">
-              <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-green-700 border-t-transparent mb-4"></div>
-                <p className="text-gray-600">Cargando carrito...</p>
-              </div>
+      <main className="min-h-screen bg-white pt-36">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex items-center justify-center h-96">
+            <div className="text-center">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-green-700 border-t-transparent mb-4"></div>
+              <p className="text-gray-600">Cargando carrito...</p>
             </div>
           </div>
-        </main>
-        <FooterCustom />
-      </>
+        </div>
+      </main>
     );
   }
 
   if (!cart || cart.contents.nodes.length === 0) {
     return (
-      <>
-        <WooNavbar />
-        <main className="min-h-screen bg-white pt-36">
-          <EmptyCartMessage />
-        </main>
-        <FooterCustom />
-      </>
+      <main className="min-h-screen bg-white pt-36">
+        <EmptyCartMessage />
+      </main>
     );
   }
 
   return (
     <>
-      <WooNavbar />
       <main className="min-h-screen bg-gray-50 pt-36">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
@@ -260,7 +249,6 @@ export default function CartPage() {
           </div>
         </div>
       </main>
-      <FooterCustom />
     </>
   );
 }

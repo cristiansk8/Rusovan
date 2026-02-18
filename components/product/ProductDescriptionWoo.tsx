@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { ProductVariations } from './ProductVariations';
 import { Minus, Plus, Truck, RefreshCcw, Shield, Package } from 'lucide-react';
 import { useCart } from '@/components/providers/CartProvider';
@@ -213,7 +214,7 @@ export function ProductDescriptionWoo({ product }: ProductDescriptionWooProps) {
         <div className="py-4">
           <ProductVariations
             variations={variations}
-            defaultPrice={product.price}
+            defaultPrice={product.price || 'Precio no disponible'}
             onVariationChange={handleVariationChange}
           />
         </div>
@@ -328,12 +329,12 @@ export function ProductDescriptionWoo({ product }: ProductDescriptionWooProps) {
         </button>
 
         <div className="mt-4 text-center">
-          <a
+          <Link
             href="/search"
             className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
             ← Continuar comprando
-          </a>
+          </Link>
         </div>
       </div>
     </div>

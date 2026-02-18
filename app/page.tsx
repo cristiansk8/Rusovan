@@ -99,7 +99,7 @@ async function getCategories() {
         !collection.handle.toLowerCase().includes('uncategorized')
       )
       .map((collection: any) => ({
-        id: collection.id,
+        id: collection.handle, // Usar handle como ID único
         name: collection.title || collection.name,
         slug: collection.handle,
         image: collection.image?.url || collection.image?.sourceUrl || '/placeholder-category.jpg',

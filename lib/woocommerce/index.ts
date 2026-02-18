@@ -6,6 +6,7 @@
  */
 
 import { revalidateTag } from 'next/cache';
+import { cache } from 'react';
 import {
   addToCartMutation,
   updateCartItemMutation
@@ -380,36 +381,43 @@ export async function getCollection(handle: string): Promise<Collection | undefi
   return reshapeCollection(collection);
 }
 
-export async function getCollections(): Promise<Collection[]> {
-  const res = await woocommerceFetch<WooCollectionsOperation>({
-    query: getCollectionsQuery
-  });
+// Usar cache para evitar múltiples llamadas a getCollections
+export const getCollections = cache(async (): Promise<Collection[]> => {
+  try {
+    const res = await woocommerceFetch<WooCollectionsOperation>({
+      query: getCollectionsQuery
+    });
 
-  const wooCollections = res.body.data.productCategories?.nodes || [];
+    const wooCollections = res.body.data.productCategories?.nodes || [];
 
-  // Filtrar categorías sin slug válido o con slug 'undefined'
-  const validCollections = wooCollections.filter((collection: WooCollection) =>
-    collection.slug &&
-    collection.slug !== 'undefined' &&
-    collection.slug !== '' &&
-    !collection.slug.toLowerCase().includes('uncategorized')
-  );
+    // Filtrar categorías sin slug válido o con slug 'undefined'
+    const validCollections = wooCollections.filter((collection: WooCollection) =>
+      collection.slug &&
+      collection.slug !== 'undefined' &&
+      collection.slug !== '' &&
+      !collection.slug.toLowerCase().includes('uncategorized')
+    );
 
-  return [
-    {
-      handle: '',
-      title: 'All',
-      description: 'All products',
-      seo: {
+    return [
+      {
+        handle: '',
         title: 'All',
-        description: 'All products'
+        description: 'All products',
+        seo: {
+          title: 'All',
+          description: 'All products'
+        },
+        path: '/search',
+        updatedAt: new Date(0).toISOString()
       },
-      path: '/search',
-      updatedAt: new Date(0).toISOString()
-    },
-    ...reshapeCollections(validCollections)
-  ];
-}
+      ...reshapeCollections(validCollections)
+    ];
+  } catch (error) {
+    console.error('Error fetching collections:', error);
+    // Retornar array vacío en caso de error para evitar loops
+    return [];
+  }
+});
 
 // ============================================================================
 // QUERIES - BÚSQUEDA

@@ -121,8 +121,6 @@ export async function addToCart(
 
     const result = res.body.data.addToCart;
 
-    console.log('addToCart result:', JSON.stringify(result, null, 2));
-
     // Usar el carrito que viene en la respuesta (ya tiene los datos actualizados)
     if (result?.cart) {
       return { success: true, cart: result.cart };

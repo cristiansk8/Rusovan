@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import {
   RecentlyViewedProduct,
   getRecentlyViewed,
@@ -27,27 +27,29 @@ export function RecentlyViewedProvider({ children }: { children: ReactNode }) {
     setRecentlyViewedState(products);
   }, []);
 
-  const addProduct = (product: RecentlyViewedProduct) => {
+  const addProduct = useCallback((product: RecentlyViewedProduct) => {
     // Actualizar estado local
-    const current = recentlyViewed.filter(p => p.id !== product.id);
-    const updated = [
-      {
-        ...product,
-        viewedAt: Date.now()
-      },
-      ...current
-    ].slice(0, 12); // Máximo 12 productos
+    setRecentlyViewedState(current => {
+      const filtered = current.filter(p => p.id !== product.id);
+      const updated = [
+        {
+          ...product,
+          viewedAt: Date.now()
+        },
+        ...filtered
+      ].slice(0, 12); // Máximo 12 productos
 
-    setRecentlyViewedState(updated);
+      // Actualizar cookie
+      setRecentlyViewed(updated);
 
-    // Actualizar cookie
-    setRecentlyViewed(updated);
-  };
+      return updated;
+    });
+  }, []);
 
-  const clearProducts = () => {
+  const clearProducts = useCallback(() => {
     setRecentlyViewedState([]);
     clearRecentlyViewed();
-  };
+  }, []);
 
   const value = {
     recentlyViewed: isClient ? recentlyViewed : [],

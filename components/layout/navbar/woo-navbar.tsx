@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Suspense } from 'react';
+import { Suspense, cache } from 'react';
 import AnnouncementBar from '@/components/custom/AnnouncementBar';
 import { WooNavbarClient } from './woo-navbar-client';
 
@@ -10,7 +10,8 @@ import { WooNavbarClient } from './woo-navbar-client';
 
 const SITE_NAME = process.env.SITE_NAME || 'Rusovan';
 
-async function getCategories() {
+// Usar cache para evitar múltiples llamadas a getCategories
+const getCategories = cache(async () => {
   try {
     const { getCollections } = await import('@/lib/woocommerce');
     const collections = await getCollections();
@@ -27,9 +28,10 @@ async function getCategories() {
         path: `/search/${collection.slug || collection.handle}`
       }));
   } catch (error) {
+    console.error('Error loading categories:', error);
     return [];
   }
-}
+});
 
 export async function WooNavbar() {
   const categories = await getCategories();

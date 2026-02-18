@@ -127,8 +127,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const openCart = () => setIsOpen(true);
-  const closeCart = () => setIsOpen(false);
+  const openCart = useCallback(() => setIsOpen(true), []);
+  const closeCart = useCallback(() => setIsOpen(false), []);
 
   // Calcular itemCount con useMemo para evitar recálculos en cada render
   const itemCount = useMemo(() => getCartItemCount(cart), [cart]);

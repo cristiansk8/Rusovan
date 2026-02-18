@@ -9,6 +9,7 @@ interface ProductAttribute {
 
 interface ProductVariation {
   id: string;
+  databaseId: number;
   name: string;
   price?: string;
   regularPrice?: string;
@@ -40,10 +41,12 @@ export function ProductVariations({ variations, defaultPrice, onVariationChange 
 
     variations.forEach((variation) => {
       variation.attributes.nodes.forEach((attr) => {
+        if (!attr.name || !attr.value) return;
+
         if (!attributeMap[attr.name]) {
           attributeMap[attr.name] = new Set();
         }
-        attributeMap[attr.name].add(attr.value);
+        attributeMap[attr.name]?.add(attr.value);
       });
     });
 
